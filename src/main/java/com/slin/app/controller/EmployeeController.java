@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
-@RequestMapping("/student")
-public class StudentController {
+@RequestMapping("/employee")
+public class EmployeeController {
 
 	
 	@RequestMapping(path="/add", method=RequestMethod.GET)

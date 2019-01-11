@@ -7,13 +7,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Builder;
+import lombok.Data;
 
 @Entity
 @Table(name="student")
-@Getter
-@Setter
+@Data
+@Builder
 public class Employee {
 
 	@Id

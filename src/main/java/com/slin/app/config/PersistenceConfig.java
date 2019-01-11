@@ -5,8 +5,10 @@ import java.util.Properties;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -27,8 +29,17 @@ public class PersistenceConfig {
 		jpaTransactionManager.setEntityManagerFactory(emf);
 		return jpaTransactionManager;
 	}
+	
+	@Bean
+	public PlatformTransactionManager getTransactionManagerSlave(@Qualifier("slave")EntityManagerFactory emf) {
+
+		JpaTransactionManager jpaTransactionManager = new JpaTransactionManager();
+		jpaTransactionManager.setEntityManagerFactory(emf);
+		return jpaTransactionManager;
+	}
 
 	@Bean
+	@Primary
 	public LocalContainerEntityManagerFactoryBean getEntityManage() {
 		LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
 		entityManagerFactoryBean.setDataSource(getDataSourceMaster());
@@ -36,6 +47,20 @@ public class PersistenceConfig {
 		JpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
 		entityManagerFactoryBean.setJpaVendorAdapter(adapter);
 		entityManagerFactoryBean.setJpaProperties(additionalProperties());
+		entityManagerFactoryBean.setPersistenceUnitName("master");
+		
+		return entityManagerFactoryBean;
+	}
+	
+	@Bean(name="slave")
+	public LocalContainerEntityManagerFactoryBean getEntityManagerSlave() {
+		LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
+		entityManagerFactoryBean.setDataSource(getDataSourceSlave());
+		entityManagerFactoryBean.setPackagesToScan(new String[] { "com.slin.app.entity" });
+		JpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
+		entityManagerFactoryBean.setJpaVendorAdapter(adapter);
+		entityManagerFactoryBean.setJpaProperties(additionalProperties());
+		entityManagerFactoryBean.setPersistenceUnitName("slave");
 		return entityManagerFactoryBean;
 	}
 
@@ -44,6 +69,16 @@ public class PersistenceConfig {
 		DriverManagerDataSource dataSource = new DriverManagerDataSource();
 		dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
 		dataSource.setUrl("jdbc:mysql://localhost:3306/db1");
+		dataSource.setUsername("root");
+		dataSource.setPassword("root");
+		return dataSource;
+	}
+	
+	@Bean
+	public DataSource getDataSourceSlave() {
+		DriverManagerDataSource dataSource = new DriverManagerDataSource();
+		dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+		dataSource.setUrl("jdbc:mysql://localhost:3306/db2");
 		dataSource.setUsername("root");
 		dataSource.setPassword("root");
 		return dataSource;
